@@ -1,4 +1,4 @@
-import { deleteNote, getNotes } from '../data/api.js';
+import { deleteNote, updateNote } from '../data/api.js';
 
 class NoteItem extends HTMLElement {
     set note(note) {
@@ -19,7 +19,6 @@ class NoteItem extends HTMLElement {
             </div>
         `;
 
-        // Event listeners for edit and delete actions
         this.querySelector('.edit-btn').addEventListener('click', () => {
             this.editNote();
         });
@@ -34,15 +33,11 @@ class NoteItem extends HTMLElement {
         const newBody = prompt("Edit Isi Catatan:", this._note.body);
 
         if (newTitle && newBody) {
-            // Update note locally
             this._note.title = newTitle;
             this._note.body = newBody;
 
-            // Send the updated note to API for update
-            await this.updateNote();
-
-            // Refresh the notes list after update
-            document.dispatchEvent(new CustomEvent('notes-updated'));
+            await this.updateNote(this._note);
+            document.dispatchEvent(new Event('notes-updated'));
         }
     }
 
@@ -64,17 +59,9 @@ class NoteItem extends HTMLElement {
     }
 
     async deleteNote() {
-        const confirmDelete = confirm("Apakah Anda yakin ingin menghapus catatan ini?");
-        if (confirmDelete) {
-            try {
-                // Call deleteNote function from API
-                await deleteNote(this._note.id);
-
-                // Refresh the notes list after deletion
-                document.dispatchEvent(new CustomEvent('notes-updated'));
-            } catch (error) {
-                console.error("Error deleting note:", error);
-            }
+        if (confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
+            await deleteNote(this._note.id);
+            document.dispatchEvent(new Event('notes-updated'));
         }
     }
 }
